@@ -17,7 +17,10 @@ import numpy as np
 from PIL import ImageGrab, Image
 import random
 import shutil
-import winshell
+try:
+    import winshell  # Windows-only; guarded below
+except ImportError:
+    winshell = None
 from pathlib import Path
 import smtplib
 from email.mime.text import MIMEText
@@ -28,10 +31,15 @@ import re
 
 class UltraAdvancedAI:
     def __init__(self):
-        # Core engines
-        self.engine = pyttsx3.init()
-        self.engine.setProperty('rate', 160)
-        self.engine.setProperty('volume', 1.0)
+        # Core engines (TTS may be unavailable on headless/server Linux --
+        # degrade gracefully to text output instead of crashing at boot)
+        try:
+            self.engine = pyttsx3.init()
+            self.engine.setProperty('rate', 160)
+            self.engine.setProperty('volume', 1.0)
+        except Exception as e:
+            print(f"⚠️  TTS engine unavailable ({e}); speech output disabled, text output only.")
+            self.engine = None
         self.recognizer = sr.Recognizer()
         
         # AI State Management
@@ -52,27 +60,37 @@ class UltraAdvancedAI:
         
     def speak(self, text, fast=False):
         """Enhanced speech output"""
+        print(f"🤖 AI: {text}")
+        if self.engine is None:
+            return  # no audio hardware / driver; text output only
         if fast:
             self.engine.setProperty('rate', 200)
-        print(f"🤖 AI: {text}")
         self.engine.say(text)
         self.engine.runAndWait()
         if fast:
             self.engine.setProperty('rate', 160)
     
     def listen(self, timeout=5):
-        """Enhanced voice recognition"""
-        with sr.Microphone() as source:
-            print("🎤 Listening...")
-            self.recognizer.adjust_for_ambient_noise(source, duration=0.2)
-            try:
-                audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=15)
-                command = self.recognizer.recognize_google(audio, language='hi-IN')
-                print(f"👤 You: {command}")
-                self.task_count += 1
-                return command.lower()
-            except:
-                return ""
+        """Enhanced voice recognition; falls back to typed input when no
+        microphone is available (e.g. headless/server environments)."""
+        try:
+            with sr.Microphone() as source:
+                print("🎤 Listening...")
+                self.recognizer.adjust_for_ambient_noise(source, duration=0.2)
+                try:
+                    audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=15)
+                    command = self.recognizer.recognize_google(audio, language='hi-IN')
+                    print(f"👤 You: {command}")
+                    self.task_count += 1
+                    return command.lower()
+                except:
+                    return ""
+        except Exception as e:
+            # No microphone hardware/driver -- use typed input instead.
+            print(f"⚠️  Microphone unavailable ({e}); using text input. Type 'exit' to quit.")
+            command = input("👤 You (type): ")
+            self.task_count += 1
+            return command.lower().strip()
     
     # ============ FILE & FOLDER OPERATIONS (50+ Tasks) ============
     def file_manager(self, cmd):

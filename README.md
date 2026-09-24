@@ -1,50 +1,25 @@
 # Voice Assistant
 
-An enterprise-grade solution engineered for high performance.
+**Desktop app (CLI)** — offline voice-controlled automation assistant ("Ultra Advanced AI Assistant", 500+ tasks: files, system control, automation). No LLM, no API keys.
 
-![Language](https://img.shields.io/badge/Language-Python-blue)
-![Status](https://img.shields.io/badge/Status-Active-success)
-![License](https://img.shields.io/badge/License-MIT-green)
+## Run
 
-## 🚀 Overview
+```bash
+python voice_assistant.py     # voice mode on a desktop with mic + speaker
+```
 
-Welcome to the **Voice Assistant** repository. This project is built to deliver a robust and scalable solution tailored to modern development standards.
+On machines without a microphone (e.g. headless servers) it falls back to typed input automatically.
 
-## ✨ Features
+## Deps
 
-- **High Performance:** Optimized for speed and efficiency.
-- **Scalable Architecture:** Designed to grow with your needs.
-- **Clean Codebase:** Follows best practices and industry standards.
-- **Secure by Default:** Engineered with security in mind.
+```bash
+pip install pyautogui SpeechRecognition pyttsx3 keyboard pyperclip psutil opencv-python pillow numpy requests
+```
 
-## 🛠️ Prerequisites
+(`pyaudio` needed for real mic input; `winshell` is Windows-only and optional.)
 
-Ensure you have the following installed in your environment before proceeding:
-- Appropriate runtime/compiler for `Python`
-- Standard development tools
+## Notes
 
-## 📦 Installation
-
-Follow standard installation steps for `Python` to set up the project locally:
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Shivay00001/voice-assistant.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd voice-assistant
-   ```
-3. Install dependencies according to the standard `Python` ecosystem.
-
-## 💻 Usage
-
-Run the project using standard execution commands for `Python`. Ensure all environment variables and configurations are set prior to execution.
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
-
-## 📝 License
-
-This project is licensed under standard terms.
+- Mic (PyAudio) and speaker (eSpeak on Linux) paths need real audio hardware — cannot be verified headless. Boot + text-input fallback verified under `xvfb-run`.
+- Fixed 2026-09-24: `winshell` import is Windows-only (optional), TTS engine failure degrades to text output, missing mic falls back to typed input.
+- Windows COM features (recycle-bin empty etc.) only run on Windows.
